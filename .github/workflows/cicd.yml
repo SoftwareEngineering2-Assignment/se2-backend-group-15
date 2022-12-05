@@ -1,0 +1,17 @@
+name: ci 
+
+on: push
+
+
+jobs: 
+  ci:  
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm i
+      - name: Run Development
+        run: npm run dev
+      - name: Production
+        run: npm start 
