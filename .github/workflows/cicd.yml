@@ -3,7 +3,6 @@ name: ci
 on: push
 
 env:
-  PORT: 3015
   SERVER_SECRET: ${{ secrets.SERVER_SECRET }}
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
   
