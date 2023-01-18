@@ -5,7 +5,7 @@ on: push
 env:
   SERVER_SECRET: ${{ secrets.SERVER_SECRET }}
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
-  
+  TEST_ID: ${{ secrets.TEST_ID }}
   
 jobs: 
   ci:  
