@@ -45,7 +45,7 @@ test('GET /dashboards', async (t) => {
 });
 
 test('POST /create-dashboard ', async (t) => {
-  const name = "TestDashboard8";
+  const name = "TestDashboard";
 
   const {body,statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${test_token}`, { json: {name} });
 
