@@ -105,6 +105,92 @@ test('POST /save-dashboard', async (t) => {
   t.assert(body.success);
 });
 
+//Cloning a dashboard 
+test('POST /clone-dashboard', async (t) =>{
+  var dashboardId = dashboards_id;
+  var name = "TestDashboard2";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/clone-dashboard?token=${test_token}`, { json: {dashboardId, name} });
+
+  t.is(statusCode,200);
+  t.assert(body.success);
+
+  //Cloning a dashboard that it's name already exists
+  var {body,statusCode} = await t.context.got.post(`dashboards/clone-dashboard?token=${test_token}`, { json: {dashboardId, name} });
+  t.is(body.status, 409);
+  t.is(body.message,'A dashboard with that name already exists.');
+
+  // Deleting the cloned dashoboard to not affect other tests 
+  var {body, statusCode} = await t.context.got(`dashboards/dashboards?token=${test_token}`);
+  var id = body.dashboards[1].id
+
+  var {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${test_token}`, {json: {id}});
+
+  t.is(statusCode,200);
+  t.assert(body.success);
+});
+
+//Check if password needed 
+test('POST /check-password-needed', async (t) =>{
+  var dashboardId = dashboards_id;
+  var user ={
+    id: process.env.TEST_ID
+  }
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/check-password-needed`, { json: {user, dashboardId} });
+
+  t.is(statusCode, 200);
+  t.assert(body.success);
+  t.is(body.dashboard.name,'TestDashboard');
+  t.is(body.hasPassword, false);
+  
+
+  //If dashboard does not exits 
+  var dashboardId = 0;
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/check-password-needed`, { json: {user, dashboardId} });
+  
+  t.is(body.message,'The specified dashboard has not been found.');
+  t.is(body.status, 409); 
+});
+
+//Change password
+test('POST /change-password', async (t) =>{
+  var dashboardId = dashboards_id;
+  var password = "12345";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/change-password?token=${test_token}`, { json: {dashboardId, password} });
+  t.assert(body.success);
+});
+
+//Check password
+test('POST /check-password', async (t) =>{
+  var dashboardId = dashboards_id;
+  var password = "12345";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/check-password`, { json: {dashboardId, password} });
+
+  t.assert(body.success);
+  t.assert(body.correctPassword);
+
+  //Incorrect password 
+  var password = "12354";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/check-password`, { json: {dashboardId, password} });
+
+  t.assert(body.success);
+  t.is(body.correctPassword,false);
+});
+
+//Share a dashboard 
+test('POST /sahre-dashboard ', async (t) => {
+  var dashboardId = dashboards_id;
+  
+  const {body, statusCode} = await t.context.got.post(`dashboards/share-dashboard?token=${test_token}`, {json: {dashboardId}});
+
+  t.assert(body.success);
+});
+
 // Deleting the test dashboard
 test('POST /delete-dashboard ', async (t) => {
   var id = dashboards_id;
@@ -156,4 +242,36 @@ test('POST /save-dashboard that does not exits', async (t) => {
 
   t.is(body.status,409);
   t.is(body.message,'The selected dashboard has not been found.' );
+});
+
+//Check password if dashboard does not exist
+test('POST /check-password if dashboard does not exist', async (t) =>{
+  var dashboardId = dashboards_id;
+  var password = "12345";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/check-password`, { json: {dashboardId, password} });
+
+  t.is(body.status, 409);
+  t.is(body.message,'The specified dashboard has not been found.');
+});
+
+//Change password if dashboard does not exist
+test('POST /change-password if dashboard does not exist', async (t) =>{
+  var dashboardId = dashboards_id;
+  var password = "12345";
+
+  var {body,statusCode} = await t.context.got.post(`dashboards/change-password?token=${test_token}`, { json: {dashboardId, password} });
+ 
+  t.is(body.status, 409);
+  t.is(body.message,'The specified dashboard has not been found.');
+});
+
+//Share a dashboard that does not exist 
+test('POST /sahre-dashboard that does not exist', async (t) => {
+  var dashboardId = dashboards_id;
+  
+  const {body, statusCode} = await t.context.got.post(`dashboards/share-dashboard?token=${test_token}`, {json: {dashboardId}});
+
+  t.is(body.status, 409);
+  t.is(body.message,'The specified dashboard has not been found.');
 });
