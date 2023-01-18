@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 const express = require('express');
 const mongoose = require('mongoose');
+//aythorization throught token 
 const {authorization} = require('../middlewares');
 
 const router = express.Router();
@@ -8,6 +9,7 @@ const router = express.Router();
 const Dashboard = require('../models/dashboard');
 const Source = require('../models/source');
 
+// Returns all the dashboards of a user 
 router.get('/dashboards',
   authorization,
   async (req, res, next) => {
@@ -32,6 +34,8 @@ router.get('/dashboards',
     }
   });
 
+//Creates a dashboard with a desired name 
+//If dashboard with the same name already exists notify user  
 router.post('/create-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -59,6 +63,8 @@ router.post('/create-dashboard',
     }
   }); 
 
+// Deletes a dashboard with a certain id
+// If the desired dashboard does not exists notify the user 
 router.post('/delete-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -78,6 +84,8 @@ router.post('/delete-dashboard',
     }
   }); 
 
+// Rerturns a dashboard via it's id 
+// If this dashboard does not exits notify user 
 router.get('/dashboard',
   authorization,
   async (req, res, next) => {
@@ -115,6 +123,8 @@ router.get('/dashboard',
     }
   });
 
+// Saves a dashoboard with some id,layout,items and next id 
+//If the certain dashboard does not exist notify the user 
 router.post('/save-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -141,6 +151,8 @@ router.post('/save-dashboard',
     }
   }); 
 
+// Clones a dashboard, with same properties, via it's id with a different name 
+// If a dashboard with the desired name already exist notify user 
 router.post('/clone-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -171,6 +183,7 @@ router.post('/clone-dashboard',
     }
   }); 
 
+// Checks if password is needed for access in a dashboard 
 router.post('/check-password-needed', 
   async (req, res, next) => {
     try {
@@ -232,6 +245,9 @@ router.post('/check-password-needed',
     }
   }); 
 
+// Checks if a password is correct for acces in a dashboard 
+// If the dashboard does not exist notify the user 
+// If the password is incorrect notify the user 
 router.post('/check-password', 
   async (req, res, next) => {
     try {
@@ -270,6 +286,8 @@ router.post('/check-password',
     }
   }); 
 
+// Shares a dashboard and returns it;s owner,if it need's password and the dashboard 
+// If the dashboard does not exist notify the user 
 router.post('/share-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -297,6 +315,7 @@ router.post('/share-dashboard',
     }
   }); 
 
+// Changes the dashboard's password 
 router.post('/change-password', 
   authorization,
   async (req, res, next) => {
