@@ -2,12 +2,14 @@
 require('dotenv').config();
 
 const http = require('node:http');
-const test = require('ava').default;
+const test = require('ava').serial;
 const got = require('got');
 const listen = require('test-listen');
 
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
+
+const test_token = jwtSign({id:process.env.TEST_ID });
 
 test.before(async (t) => {
   t.context.server = http.createServer(app);
@@ -21,15 +23,41 @@ test.after.always((t) => {
 
 test('GET /statistics returns correct response and status code', async (t) => {
   const {statusCode, body } = await t.context.got('general/statistics');
+
   t.is(statusCode, 200);
   t.assert(body.success);
-  // sources not required
-  // console.log(body);
-  // t.is(body.sources, 1);
 });
 
 test('GET /sources returns correct response and status code', async (t) => {
-  const token = jwtSign({id: 1});
-  const {statusCode} = await t.context.got(`sources/sources?token=${token}`);
+  const {statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
+
   t.is(statusCode, 200);
+});
+
+
+// Testing for dashboards
+
+test('GET /dashboards', async (t) => {
+  const {body, statusCode} = await t.context.got(`dashboards/dashboards?token=${test_token}`);
+  
+  t.assert(body.success);
+  t.is(statusCode, 200);
+});
+
+test('POST /create-dashboard ', async (t) => {
+  const name = "TestDashboard8";
+
+  const {body,statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${test_token}`, { json: {name} });
+
+  t.assert(body.success);
+  t.is(statusCode, 200);
+});
+
+test('POST /create-dashboard that already exists', async (t) => {
+  const name = "TestDashboard";
+
+  const {body,statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${test_token}`, { json: {name} });
+  
+  t.is(body.status, 409);
+  t.is(body.message, 'A dashboard with that name already exists.');
 });
