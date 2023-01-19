@@ -380,9 +380,9 @@ test('POST /resetpassword to a user tha does not exist', async (t) => {
 
 //Change password 
 test('POST /changepassword', async (t) => {
-  var password = "12345";
+  var password = "test-password";
 
-  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_token}`, {json: {password}});
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
   
   t.assert(body.ok);
   t.is(body.message,'Password was changed.');
