@@ -358,16 +358,6 @@ test('POST /authenticate a user with wrong password', async (t) => {
   t.is(body.message, 'Authentication Error: Password does not match!');
 });
 
-//Reset user's password
-test('POST /resetpassword', async (t) => {
-  var username = "test-username";
-
-  const {body, statusCode} = await t.context.got.post(`users/resetpassword`, {json: {username}});
-  
-  t.assert(body.ok)
-  t.is(body.message,'Forgot password e-mail sent.');
-});
-
 //Reset password to a user that does not exist
 test('POST /resetpassword to a user tha does not exist', async (t) => {
   var username = "not_a_user";
@@ -378,16 +368,16 @@ test('POST /resetpassword to a user tha does not exist', async (t) => {
   t.is(body.message,'Resource Error: User not found.');
 });
 
-// //Change password
-// //Locally passes the test  
-// test('POST /changepassword', async (t) => {
-//   var password = "test-password";
+//Change password
+//Locally passes the test  
+test('POST /changepassword', async (t) => {
+  var password = "test-password";
 
-//   const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
   
-//   t.assert(body.ok);
-//   t.is(body.message,'Password was changed.');
-// });
+  t.assert(body.ok);
+  t.is(body.message,'Password was changed.');
+});
 
 // //Change password to a user that does not exist
 // //Locally passes the test
@@ -400,3 +390,13 @@ test('POST /resetpassword to a user tha does not exist', async (t) => {
 //   t.is(body.status, 404);
 //   t.is(body.message,'Resource Error: User not found.');
 // });
+
+//Reset user's password
+test('POST /resetpassword', async (t) => {
+  var username = "test-username";
+
+  const {body, statusCode} = await t.context.got.post(`users/resetpassword`, {json: {username}});
+  
+  t.assert(body.ok)
+  t.is(body.message,'Forgot password e-mail sent.');
+});
