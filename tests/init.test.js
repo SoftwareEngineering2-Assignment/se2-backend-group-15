@@ -369,7 +369,6 @@ test('POST /resetpassword to a user tha does not exist', async (t) => {
 });
 
 //Change password
-//Locally passes the test  
 test('POST /changepassword', async (t) => {
   var password = "test-password";
 
@@ -380,7 +379,6 @@ test('POST /changepassword', async (t) => {
 });
 
 //Change password to a user that does not exist
-//Locally passes the test
 test('POST /changepassword to a user that does not exist', async (t) => {
   var password = "test-password";
   test_user_token = jwtSign({username: "not_a_user"});
