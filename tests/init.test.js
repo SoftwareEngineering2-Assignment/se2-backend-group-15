@@ -9,6 +9,7 @@ const listen = require('test-listen');
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
 const { mongoose } = require('../src/config');
+const { type } = require('node:os');
 
 const test_token = jwtSign({id:process.env.TEST_ID });
 
@@ -24,19 +25,87 @@ test.after.always((t) => {
   t.context.server.close();
 });
 
-test('GET /statistics returns correct response and status code', async (t) => {
-  const {statusCode, body } = await t.context.got('general/statistics');
-
-  t.is(statusCode, 200);
-  t.assert(body.success);
-});
-
 test('GET /sources returns correct response and status code', async (t) => {
   const {statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
 
   t.is(statusCode, 200);
 });
 
+//Testing for general 
+
+// Getting all the statistics from home page 
+test('GET /statistics returns correct response and status code', async (t) => {
+  const {statusCode, body } = await t.context.got(`general/statistics`);
+
+  t.is(statusCode, 200);
+  t.assert(body.success);
+});
+
+//Testing a url 
+test('GET /test-url', async (t) => {
+  var url = "https://se2-frontend-15.netlify.app/";
+
+  const {body, statusCode } = await t.context.got(`general/test-url?url=${url}`);
+
+  t.is(statusCode, body.status);
+  t.assert(body.active);
+});
+
+//Testing a url that does not exist
+test('GET /test wrong url', async (t) => {
+  var url = "wrong-url";
+
+  const {body, statusCode } = await t.context.got(`general/test-url?url=${url}`);
+
+  t.is(body.status, 500);
+  t.is(body.active,false);
+});
+
+// Testing a get request to a url 
+test('GET /test-url-request get ', async (t) => {
+  var url = "https://se2-frontend-15.netlify.app/";
+  var type = "GET";
+
+  const {body, statusCode } = await t.context.got(`general/test-url-request?url=${url}&type=${type}`);
+
+  t.is(statusCode, 200);
+  t.is(body.status, 200);
+});
+
+// Testing a post request to a url 
+test('GET /test-url-request post ', async (t) => {
+  var url = "https://se2-frontend-15.netlify.app/";
+  var type = "POST";
+
+  const {body, statusCode } = await t.context.got(`general/test-url-request?url=${url}&type=${type}`);
+
+  t.is(statusCode, 200);
+  //The request is send to the url but it does not do changes 
+  t.is(body.status, 500);
+});
+
+// Testing a put request to a url 
+test('GET /test-url-request put ', async (t) => {
+  var url = "https://se2-frontend-15.netlify.app/";
+  var type = "PUT";
+
+  const {body, statusCode } = await t.context.got(`general/test-url-request?url=${url}&type=${type}`);
+
+  t.is(statusCode, 200);
+  //The request is send to the url but it does not do changes 
+  t.is(body.status, 500);
+});
+
+// Testing a request tha does not exist to a url 
+test('GET /test-url-request wrong ', async (t) => {
+  var url = "https://se2-frontend-15.netlify.app/";
+  var type = "WRONG";
+
+  const {body, statusCode } = await t.context.got(`general/test-url-request?url=${url}&type=${type}`);
+
+  t.is(statusCode, 200);
+  t.is(body.status, 500);
+});
 
 // Testing for dashboards
 
