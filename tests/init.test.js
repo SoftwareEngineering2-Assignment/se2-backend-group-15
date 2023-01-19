@@ -14,6 +14,7 @@ const { type } = require('node:os');
 const test_token = jwtSign({id:process.env.TEST_ID });
 
 var dashboards_id;
+var sources_id;
 
 test.before(async (t) => {
   t.context.server = http.createServer(app);
@@ -25,10 +26,160 @@ test.after.always((t) => {
   t.context.server.close();
 });
 
+//Testing for sources 
+
+//Getting all the user's sources 
 test('GET /sources returns correct response and status code', async (t) => {
-  const {statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
+  const {body, statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
 
   t.is(statusCode, 200);
+  t.assert(body.success);
+  t.is(body.sources.length, 0);
+});
+
+//Creating a source 
+test('POST /creat-source', async (t) => {
+  var name = "test-name";
+  var type = "test-type";
+  var url = "test-url";
+  var login = "test-login";
+  var passcode = "test-passcode";
+  var vhost = "test-vhost";
+
+  const {body, statusCode} = await t.context.got.post(`sources/create-source?token=${test_token}`, { json: {name, type, url, login, passcode, vhost} });
+
+  t.is(statusCode, 200);
+  t.assert(body.success);
+});
+
+//Checking if source is really created  
+test('GET /sources after creation', async (t) => {
+  const {body, statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
+
+  t.is(statusCode, 200);
+  t.assert(body.success);
+  t.is(body.sources.length, 1);
+
+  sources_id = body.sources[0].id;
+});
+
+//Creating a source with a name that already exists 
+test('POST /creat-source with a name that already exists', async (t) => {
+  var name = "test-name";
+  var type = "test-type";
+  var url = "test-url";
+  var login = "test-login";
+  var passcode = "test-passcode";
+  var vhost = "test-vhost";
+
+  var {body, statusCode} = await t.context.got.post(`sources/create-source?token=${test_token}`, { json: {name, type, url, login, passcode, vhost} });
+
+  t.is(body.status, 409);
+  t.is(body.message, 'A source with that name already exists.');
+});
+
+var second_source_id;
+//Change a source with a new name that already exist
+test('POST /change-source with a new name that already exist', async (t) => {
+  var id = sources_id;
+  var name = "new-test-name";
+  var type = "test-type";
+  var url = "test-url";
+  var login = "test-login";
+  var passcode = "test-passcode";
+  var vhost = "test-vhost";
+
+  //Creatin a second source
+  var {body, statusCode} = await t.context.got.post(`sources/create-source?token=${test_token}`, { json: {name, type, url, login, passcode, vhost} });
+  
+  var {body, statusCode} = await t.context.got(`sources/sources?token=${test_token}`);
+  second_source_id = body.sources[1].id;
+
+  var {body, statusCode} = await t.context.got.post(`sources/change-source?token=${test_token}`, { json: {id, name, type, url, login, passcode, vhost} });
+
+  t.is(body.status, 409);
+  t.is(body.message,'A source with the same name has been found.');
+
+  //Deleting the second source
+  var id = second_source_id;
+  var {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${test_token}`, {json: {id}});
+  t.assert(body.success);
+});
+
+//Findig a source
+test('POST /source', async (t) => {
+  var name = "test-name";
+  var owner = "self";
+  var user = {id:process.env.TEST_ID };
+
+  var {body, statusCode} = await t.context.got.post(`sources/source`, { json: {name, owner, user} });
+
+  t.assert(body.success);
+  t.is(body.source.type, 'test-type');
+});
+
+//Find a source that does not exist 
+test('POST /source that does not exist', async (t) => {
+  var name = "not-a-source";
+  var owner = "self";
+  var user = {id:process.env.TEST_ID };
+
+  var {body, statusCode} = await t.context.got.post(`sources/source`, { json: {name, owner, user} });
+
+  t.is(body.status, 409);
+  t.is(body.message,'The selected source has not been found.');
+});
+
+//Change a source 
+test('POST /change-source ', async (t) => {
+  var id = sources_id;
+  var name = "new-test-name";
+  var type = "new-test-type";
+  var url = "new-test-url";
+  var login = "new-test-login";
+  var passcode = "new-test-passcode";
+  var vhost = "new-test-vhost";
+
+  const {body, statusCode} = await t.context.got.post(`sources/change-source?token=${test_token}`, { json: {id, name, type, url, login, passcode, vhost} });
+
+  t.is(statusCode, 200);
+  t.assert(body.success);
+});
+
+//Delete a source via it's id 
+test('POST /delete-source ', async (t) => {
+  var id = sources_id;
+  
+  const {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${test_token}`, {json: {id}});
+
+  t.is(statusCode,200);
+  t.assert(body.success);
+});
+
+//Delete a source that does not exist 
+test('POST /delete-source that does not exist', async (t) => {
+  var id = sources_id;
+  
+  const {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${test_token}`, {json: {id}});
+
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected source has not been found.');
+});
+
+//Change a source that does not exist
+test('POST /change-source that does not exist ', async (t) => {
+  var id = sources_id;
+  var name = "test-name";
+  var type = "test-type";
+  var url = "test-url";
+  var login = "test-login";
+  var passcode = "test-passcode";
+  var vhost = "test-vhost";
+
+  const {body, statusCode} = await t.context.got.post(`sources/change-source?token=${test_token}`, { json: {id, name, type, url, login, passcode, vhost} });
+
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected source has not been found.');
 });
 
 //Testing for general 
