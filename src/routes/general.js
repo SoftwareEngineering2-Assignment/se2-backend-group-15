@@ -8,9 +8,11 @@ const User = require('../models/user');
 const Dashboard = require('../models/dashboard');
 const Source = require('../models/source');
 
+// Getting the statistics from the home page 
 router.get('/statistics',
   async (req, res, next) => {
     try {
+      // The statistics that we are taking 
       const users = await User.countDocuments();
       const dashboards = await Dashboard.countDocuments();
       const views = await Dashboard.aggregate([
@@ -27,7 +29,8 @@ router.get('/statistics',
       if (views[0] && views[0].views) {
         totalViews = views[0].views;
       }
-
+      
+      // Return the stastistics 
       return res.json({
         success: true,
         users,
@@ -40,16 +43,20 @@ router.get('/statistics',
     }
   });
 
+  // Testing a url 
 router.get('/test-url',
   async (req, res) => {
     try {
+      // Url is given with a query parameter 
       const {url} = req.query;
       const {statusCode} = await got(url);
+      // Return the status code and if the url is active 
       return res.json({
         status: statusCode,
         active: (statusCode === 200),
       });
     } catch (err) {
+      // If the url is not active return error code 
       return res.json({
         status: 500,
         active: false,
@@ -57,14 +64,17 @@ router.get('/test-url',
     }
   });
 
+  // Testing http request to a url
 router.get('/test-url-request',
   async (req, res) => {
     try {
+      // query parameters to specify the request we want to do 
       const {url, type, headers, body: requestBody, params} = req.query;
 
       let statusCode;
       let body;
       switch (type) {
+        // Choose the type of the request 
         case 'GET':
           ({statusCode, body} = await got(url, {
             headers: headers ? JSON.parse(headers) : {},
@@ -83,6 +93,7 @@ router.get('/test-url-request',
             json: requestBody ? JSON.parse(requestBody) : {}
           }));
           break;
+          // If request is sent but does not work 
         default:
           statusCode = 500;
           body = 'Something went wrong';
@@ -93,6 +104,7 @@ router.get('/test-url-request',
         response: body,
       });
     } catch (err) {
+      // If the request is not send return error code 
       return res.json({
         status: 500,
         response: err.toString(),
