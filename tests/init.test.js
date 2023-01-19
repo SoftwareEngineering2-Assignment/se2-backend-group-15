@@ -379,17 +379,17 @@ test('POST /changepassword', async (t) => {
   t.is(body.message,'Password was changed.');
 });
 
-// //Change password to a user that does not exist
-// //Locally passes the test
-// test('POST /changepassword to a user that does not exist', async (t) => {
-//   var password = "test-password";
-//   test_user_token = jwtSign({username: "not_a_user"});
+//Change password to a user that does not exist
+//Locally passes the test
+test('POST /changepassword to a user that does not exist', async (t) => {
+  var password = "test-password";
+  test_user_token = jwtSign({username: "not_a_user"});
 
-//   const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
   
-//   t.is(body.status, 404);
-//   t.is(body.message,'Resource Error: User not found.');
-// });
+  t.is(body.status, 404);
+  t.is(body.message,'Resource Error: User not found.');
+});
 
 //Reset user's password
 test('POST /resetpassword', async (t) => {
