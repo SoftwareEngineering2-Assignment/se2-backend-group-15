@@ -8,6 +8,7 @@ const listen = require('test-listen');
 
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
+const { mongoose } = require('../src/config');
 
 const test_token = jwtSign({id:process.env.TEST_ID });
 
@@ -274,4 +275,139 @@ test('POST /sahre-dashboard that does not exist', async (t) => {
 
   t.is(body.status, 409);
   t.is(body.message,'The specified dashboard has not been found.');
+});
+
+//Testing for users 
+
+// It works only at first test. At next test it fails because user already exist
+
+// //Create test user 
+// test('POST /create a user', async (t) => {
+//   var username = "test-username";
+//   var password = "test-password";
+//   var email = "test@test.com";
+
+//   const {body, statusCode} = await t.context.got.post(`users/create`, {json: {username, password, email}});
+
+//   t.assert(body.success);
+// });
+
+
+//Create a user with an email that already is used  
+test('POST /create a user an email tha already is used ', async (t) => {
+  var username = "test";
+  var password = "test-password";
+  var email = "test@test.com";
+
+  const {body, statusCode} = await t.context.got.post(`users/create`, {json: {username, password, email}});
+
+  t.is(body.status, 409);
+  t.is(body.message, 'Registration Error: A user with that e-mail or username already exists.');
+});
+
+//Create a user with a username that already is used  
+test('POST /create a user a username tha already is used ', async (t) => {
+  var username = "test-username";
+  var password = "test-password";
+  var email = "test@different.com";
+
+  const {body, statusCode} = await t.context.got.post(`users/create`, {json: {username, password, email}});
+
+  t.is(body.status, 409);
+  t.is(body.message, 'Registration Error: A user with that e-mail or username already exists.');
+});
+
+//Authenticate user 
+var test_user_token;
+
+test('POST /authenticate', async (t) => {
+  var username = "test-username";
+  var password = "test-password";
+
+
+  const {body, statusCode} = await t.context.got.post(`users/authenticate`, {json: {username, password}});
+  
+  t.is(statusCode, 200)
+  t.is(body.user.username, username);
+  
+  //Store test user token for future test 
+  test_user_token = body.token ;
+});
+
+//Authenticate a user that does not exist 
+test('POST /authenticate a user that does not exist', async (t) => {
+  var username = "not_a_user";
+  var password = "test-password";
+
+
+  const {body, statusCode} = await t.context.got.post(`users/authenticate`, {json: {username, password}});
+  
+  t.is(body.status, 401)
+  t.is(body.message, 'Authentication Error: User not found.');
+});
+
+//Authenticate a user with wrong password 
+test('POST /authenticate a user with wrong password', async (t) => {
+  var username = "test-username";
+  var password = "wrong_password";
+
+
+  const {body, statusCode} = await t.context.got.post(`users/authenticate`, {json: {username, password}});
+  
+  t.is(body.status, 401)
+  t.is(body.message, 'Authentication Error: Password does not match!');
+});
+
+//Reset user's password
+test('POST /resetpassword', async (t) => {
+  var username = "test-username";
+
+  const {body, statusCode} = await t.context.got.post(`users/resetpassword`, {json: {username}});
+  
+  t.assert(body.ok)
+  t.is(body.message,'Forgot password e-mail sent.');
+});
+
+//Reset password to a user that does not exist
+test('POST /resetpassword to a user tha does not exist', async (t) => {
+  var username = "not_a_user";
+
+  const {body, statusCode} = await t.context.got.post(`users/resetpassword`, {json: {username}});
+  
+  t.is(body.status, 404);
+  t.is(body.message,'Resource Error: User not found.');
+});
+
+//Change password 
+test('POST /changepassword', async (t) => {
+  var password = "test-password";
+
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  
+  t.assert(body.ok);
+  t.is(body.message,'Password was changed.');
+});
+
+//Change password to a user that token has expired
+test('POST /changepassword to a user that token has expird', async (t) => {
+  var password = "test-password";
+  var username = "test-username";
+
+  var {body, statusCode} = await t.context.got.post(`users/authenticate`, {json: {username, password}});
+
+  var {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  
+  t.is(body.status, 410);
+  t.is(body.message,' Resource Error: Reset token has expired.');
+});
+
+//Change password to a user that does not exist
+test('POST /changepassword to a user that does not exist', async (t) => {
+  var password = "test-password";
+  test_user_token = jwtSign({username: "not_a_user"});
+
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  
+  t.is(body.status, 404);
+  t.is(body.message,'Resource Error: User not found.');
 });
