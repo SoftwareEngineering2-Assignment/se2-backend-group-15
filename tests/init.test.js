@@ -5,7 +5,6 @@ const http = require('node:http');
 const test = require('ava').serial;
 const got = require('got');
 const listen = require('test-listen');
-const sinon = require('sinon');
 
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
