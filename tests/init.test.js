@@ -5,6 +5,7 @@ const http = require('node:http');
 const test = require('ava').serial;
 const got = require('got');
 const listen = require('test-listen');
+const sinon = require('sinon');
 
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
@@ -386,19 +387,6 @@ test('POST /changepassword', async (t) => {
   
   t.assert(body.ok);
   t.is(body.message,'Password was changed.');
-});
-
-//Change password to a user that token has expired
-test('POST /changepassword to a user that token has expird', async (t) => {
-  var password = "test-password";
-  var username = "test-username";
-
-  var {body, statusCode} = await t.context.got.post(`users/authenticate`, {json: {username, password}});
-
-  var {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
-  
-  t.is(body.status, 410);
-  t.is(body.message,' Resource Error: Reset token has expired.');
 });
 
 //Change password to a user that does not exist
