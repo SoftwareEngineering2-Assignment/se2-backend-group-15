@@ -378,15 +378,15 @@ test('POST /resetpassword to a user tha does not exist', async (t) => {
   t.is(body.message,'Resource Error: User not found.');
 });
 
-// //Change password 
-// test('POST /changepassword', async (t) => {
-//   var password = "test-password";
+//Change password 
+test('POST /changepassword', async (t) => {
+  var password = "12345";
 
-//   const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_user_token}`, {json: {password}});
+  const {body, statusCode} = await t.context.got.post(`users/changepassword?token=${test_token}`, {json: {password}});
   
-//   t.assert(body.ok);
-//   t.is(body.message,'Password was changed.');
-// });
+  t.assert(body.ok);
+  t.is(body.message,'Password was changed.');
+});
 
 // //Change password to a user that does not exist
 // test('POST /changepassword to a user that does not exist', async (t) => {
