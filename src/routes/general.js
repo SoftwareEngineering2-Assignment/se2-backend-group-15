@@ -12,7 +12,7 @@ const Source = require('../models/source');
 router.get('/statistics',
   async (req, res, next) => {
     try {
-      // The statistics that we are taking 
+      // The statistics that we are taking, total # of users, total # of dashboards, total # of views and total # of sources
       const users = await User.countDocuments();
       const dashboards = await Dashboard.countDocuments();
       const views = await Dashboard.aggregate([
@@ -25,6 +25,7 @@ router.get('/statistics',
       ]);
       const sources = await Source.countDocuments();
 
+      // Calculate total views
       let totalViews = 0;
       if (views[0] && views[0].views) {
         totalViews = views[0].views;

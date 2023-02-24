@@ -4,6 +4,7 @@ const beautifyUnique = require('mongoose-beautiful-unique-validation');
 const {passwordDigest, comparePassword} = require('../utilities/authentication/helpers');
 const {constants: {min}} = require('../utilities/validation');
 
+// Disaple pluralize
 mongoose.pluralize(null);
 
 // The structure of the user 

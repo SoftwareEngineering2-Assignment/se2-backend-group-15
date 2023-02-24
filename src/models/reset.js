@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const beautifyUnique = require('mongoose-beautiful-unique-validation');
 const {constants: {expires}} = require('../utilities/validation');
 
+// Reset Schema Definition
 const ResetSchema = new mongoose.Schema({
   username: {
     index: true,
@@ -26,5 +27,6 @@ const ResetSchema = new mongoose.Schema({
 
 ResetSchema.plugin(beautifyUnique);
 
+ // Disable pluralize
 mongoose.pluralize(null);
 module.exports = mongoose.model('reset-tokens', ResetSchema);

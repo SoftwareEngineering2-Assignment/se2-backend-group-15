@@ -2,8 +2,10 @@
 const mongoose = require('mongoose');
 const beautifyUnique = require('mongoose-beautiful-unique-validation');
 
+ // Disable pluralize
 mongoose.pluralize(null);
 
+// Source schema definition
 const SourceSchema = new mongoose.Schema(
   {
     name: {

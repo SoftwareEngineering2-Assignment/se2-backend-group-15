@@ -15,8 +15,9 @@ router.get('/dashboards',
   async (req, res, next) => {
     try {
       const {id} = req.decoded;
-      // Find all the dashboardds
+      // Find all the dashboards
       const foundDashboards = await Dashboard.find({owner: mongoose.Types.ObjectId(id)});
+      // New array with necesssary info
       const dashboards = [];
       foundDashboards.forEach((s) => {
         dashboards.push({
@@ -72,7 +73,7 @@ router.post('/delete-dashboard',
   authorization,
   async (req, res, next) => {
     try {
-      // Thed dashboard's id we want to delete
+      // The dashboard's id we want to delete
       const {id} = req.body;
       // Checking if a dashboard with the given id exists 
       const foundDashboard = await Dashboard.findOneAndRemove({_id: mongoose.Types.ObjectId(id), owner: mongoose.Types.ObjectId(req.decoded.id)});
@@ -89,7 +90,7 @@ router.post('/delete-dashboard',
     }
   }); 
 
-// Rerturns a dashboard via it's id 
+// Rerturns a dashboard via its id 
 router.get('/dashboard',
   authorization,
   async (req, res, next) => {
@@ -114,14 +115,14 @@ router.get('/dashboard',
       dashboard.items = foundDashboard.items;
       dashboard.nextId = foundDashboard.nextId;
 
-      // Getting any sources tha dashboard has 
+      // Getting any sources that dashboard has 
       const foundSources = await Source.find({owner: mongoose.Types.ObjectId(req.decoded.id)});
       const sources = [];
       foundSources.forEach((s) => {
         sources.push(s.name);
       });
       
-      // return dashboard and it's sources 
+      // return dashboard and its sources 
       return res.json({
         success: true,
         dashboard,
@@ -160,7 +161,7 @@ router.post('/save-dashboard',
     }
   }); 
 
-// Clones a dashboard, with same properties, via it's id with a different name 
+// Clones a dashboard, with same properties, via its id with a different name 
 router.post('/clone-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -295,6 +296,7 @@ router.post('/check-password',
       dashboard.layout = foundDashboard.layout;
       dashboard.items = foundDashboard.items;
 
+      // Return success and dashboard when password = correct
       return res.json({
         success: true,
         correctPassword: true,
@@ -306,7 +308,7 @@ router.post('/check-password',
     }
   }); 
 
-// Shares a dashboard and returns it;s owner,if it need's password and the dashboard 
+// Shares a dashboard and returns its owner,if it needs password and the dashboard 
 router.post('/share-dashboard', 
   authorization,
   async (req, res, next) => {
@@ -317,7 +319,7 @@ router.post('/share-dashboard',
       // Checking if a dashboard with this id exists
       const foundDashboard = await Dashboard.findOne({_id: mongoose.Types.ObjectId(dashboardId), owner: mongoose.Types.ObjectId(id)});
       if (!foundDashboard) {
-        //If it does noe exist return error code and a message 
+        //If it does not exist return error code and a message 
         return res.json({
           status: 409,
           message: 'The specified dashboard has not been found.'
@@ -325,6 +327,7 @@ router.post('/share-dashboard',
       }
       foundDashboard.shared = !(foundDashboard.shared);
       
+      // Save changes of dashboard
       await foundDashboard.save();
 
       return res.json({
@@ -356,6 +359,7 @@ router.post('/change-password',
       }
       foundDashboard.password = password;
       
+      // Save new password
       await foundDashboard.save();
 
       return res.json({success: true});
