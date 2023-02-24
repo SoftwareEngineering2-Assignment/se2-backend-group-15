@@ -1,3 +1,4 @@
+// Validation constants
 const min = 5;
 const expires = '12h';
 
